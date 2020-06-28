@@ -1,0 +1,36 @@
+name: Update Android NDK
+on: [push]
+
+jobs:
+    ndk:
+      name: Update Android NDK
+      runs-on: ubuntu-latest
+      strategy:
+          matrix: 
+              VERSION: [10e, 11c, 12b, 13b, 14b, 15c, 16b, 17c, 18b, 19c, 20b, 21d]
+      
+      steps:
+        - name: Clone Android NDK repository
+          uses: actions/checkout@v2
+          with:
+            ref: r${{ matrix.VERSION }}
+        - name: Download Android NDK from Google
+          run: |
+            wget "https://dl.google.com/android/repository/android-ndk-r${{ matrix.VERSION }}-linux-x86_64.zip" -O ndk.zip
+        - name: Extract Android NDK
+          run: |
+            unzip -q ndk.zip
+            cd "android-ndk-r${{ matrix.VERSION }}"
+            mv * ..
+            cd ..
+            rm ndk.zip
+            rm -rf "android-ndk-r${{ matrix.VERSION }}"
+        - name: Push Android NDK to GitHub
+          uses: stefanzweifel/git-auto-commit-action@v4
+          with:
+            commit_message: 'Update Android NDK r${{ matrix.VERSION }}'
+            commit_user_email: mail@ernestocastellotti.it
+            commit_user_name: Ernesto Castellotti (BOT)
+            branch: r${{ matrix.VERSION }}
+            push_options: '--force'
+            repository: .
